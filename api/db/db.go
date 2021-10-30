@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/44t4nk1/StudentPortal/api/models"
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
 )
@@ -21,5 +22,8 @@ func RunDB() (*gorm.DB, error) {
 		fmt.Printf("Cannot connect to %s database", os.Getenv("DB_DRIVER"))
 		log.Fatal("This is the error:", err)
 	}
+
+	DB.Debug().AutoMigrate(&models.Student{})
+
 	return DB, err
 }
