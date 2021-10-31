@@ -8,11 +8,9 @@ import (
 
 	"github.com/44t4nk1/StudentPortal/api/db"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 var (
-	DB     *gorm.DB
 	err    error
 	router = gin.Default()
 )
