@@ -9,4 +9,5 @@ require (
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/mattn/go-sqlite3 v2.0.1+incompatible // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 )
