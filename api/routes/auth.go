@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/44t4nk1/StudentPortal/api/db"
+	"github.com/44t4nk1/StudentPortal/api/middleware"
 	"github.com/44t4nk1/StudentPortal/api/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,6 +22,18 @@ func hashAndSalt(pwd []byte) string {
 	}
 
 	return string(hash)
+}
+
+func comparePasswords(hashedPwd string, plainPwd []byte) bool {
+
+	byteHash := []byte(hashedPwd)
+	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	return true
 }
 
 func Signup(c *gin.Context) {
@@ -53,5 +66,39 @@ func Signup(c *gin.Context) {
 		return
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "User already exists"})
+	}
+}
+
+func Login(c *gin.Context) {
+	var stuLogin models.StudentLogin
+
+	if err := c.ShouldBindJSON(&stuLogin); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Invalid JSON Provided"})
+		return
+	}
+	DB := db.GetDB()
+	var result models.Student
+	err := DB.Debug().Model(models.Student{}).Where("email = ?", stuLogin.Email).Take(&result).Error
+	if gorm.IsRecordNotFoundError(err) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "User does not exist"})
+		return
+	}
+	if comparePasswords(result.Password, []byte(stuLogin.Password)) {
+		tokenString := result.UUID
+		token, err := middleware.CreateToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Error in creating token"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"error":   false,
+			"message": "Login succesfull",
+			"token":   token,
+		})
+	} else {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   true,
+			"message": "Incorrect password",
+		})
 	}
 }
