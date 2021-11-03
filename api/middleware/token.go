@@ -1,10 +1,13 @@
 package middleware
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
@@ -22,4 +25,24 @@ func CreateToken(id uuid.UUID) (string, error) {
 		return "", err
 	}
 	return token, nil
+}
+
+func IsAuth(endpoint func(c *gin.Context, token *jwt.Token)) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reqToken := c.Request.Header["Authorization"][0]
+		tokenString := reqToken[7:]
+		claims := jwt.MapClaims{}
+		godotenv.Load()
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("ACCESS_SECRET")), nil
+		})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "error in JWT", "error": true})
+			fmt.Println(err)
+		} else {
+			if token.Valid && token.Claims.(jwt.MapClaims)["authorized"].(bool) {
+				endpoint(c, token)
+			}
+		}
+	}
 }

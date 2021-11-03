@@ -24,3 +24,10 @@ type Student struct {
 	Name     string    `gorm:"size:255;not null;" json:"name"`
 	RegNo    string    `gorm:"size:255;not null;" json:"regno"`
 }
+
+type StudentData struct {
+	UUID  uuid.UUID `gorm:"primary_key" json:"uuid"`
+	Email string    `gorm:"size:255;not null;" json:"email"`
+	Name  string    `gorm:"size:255;not null;" json:"name"`
+	RegNo string    `gorm:"size:255;not null;" json:"regno"`
+}
