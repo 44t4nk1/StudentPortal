@@ -39,7 +39,7 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 func Signup(c *gin.Context) {
 	var student models.StudentReg
 	if err := c.ShouldBindJSON(&student); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Invalid JSON Provided"})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": true, "message": "Invalid JSON Provided"})
 		return
 	}
 	DB := db.GetDB()
@@ -62,10 +62,10 @@ func Signup(c *gin.Context) {
 			"message": "Account created succesfully",
 		})
 	} else if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Error in accessing DB"})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": true, "message": "Error in accessing DB"})
 		return
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "User already exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "User already exists"})
 	}
 }
 
@@ -73,21 +73,21 @@ func Login(c *gin.Context) {
 	var stuLogin models.StudentLogin
 
 	if err := c.ShouldBindJSON(&stuLogin); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Invalid JSON Provided"})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": true, "message": "Invalid JSON Provided"})
 		return
 	}
 	DB := db.GetDB()
 	var result models.Student
 	err := DB.Debug().Model(models.Student{}).Where("email = ?", stuLogin.Email).Take(&result).Error
 	if gorm.IsRecordNotFoundError(err) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "User does not exist"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "User does not exist"})
 		return
 	}
 	if comparePasswords(result.Password, []byte(stuLogin.Password)) {
 		tokenString := result.UUID
 		token, err := middleware.CreateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "Error in creating token"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "Error in creating token"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
