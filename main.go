@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/44t4nk1/StudentPortal/api/middleware"
 	"github.com/44t4nk1/StudentPortal/api/routes"
 	cors "github.com/itsjamie/gin-cors"
 
@@ -23,6 +24,8 @@ func init() {
 		log.Fatal(err)
 	}
 
+	rateLimiter := middleware.RateLimitMiddleware()
+
 	router.Use(
 		cors.Middleware(
 			cors.Config{
@@ -34,7 +37,7 @@ func init() {
 				Credentials:     true,
 				ValidateHeaders: false,
 			}))
-
+	router.Use(rateLimiter)
 	routes.InitRoutes(router)
 }
 

